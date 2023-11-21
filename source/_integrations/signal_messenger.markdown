@@ -18,13 +18,40 @@ The `signal_messenger` integration uses the [Signal Messenger REST API](https://
 ## Setup
  
 The requirements are:
-
+- You need to install the extension
 - You need to set up the Signal Messenger REST API. 
 - You need a spare phone number to register with the Signal Messenger service. 
 
 
 Please follow those [instructions](https://github.com/bbernhard/signal-cli-rest-api/blob/master/doc/HOMEASSISTANT.md), to set up the Signal Messenger REST API. 
 
+## install extension
+- install HACS in home assistant
+- open HACS >> Add-ons >> Add-on store >> three dots >> add repository >> add https://github.com/haberda/hassio_addons >> "ADD"
+- install "Signal Messenger"
+- open HACS >> Add-ons >> Signal Messanger >> Configuration :
+    - mode: normal
+    - signal_cli_cmd_timeout : 60
+    - Rest-api port : 9123  (or any other free port)
+- INFO >> "start" ("start" button shall change to "stop" and "restart")
+
+## Signal Messenger REST API. 
+
+solve captcha : https://signalcaptchas.org/registration/generate 
+copy link "open signal" and paste to texteditor
+
+
+on any linux pc / raspberry pi:
+
+curl -X POST -H "Content-Type: application/json" --data '{"use_voice": false}' 'http://192.168.1.IPofhomeassisant:9123/v1/register/+491770000000'
+ 
+or 
+
+curl -X POST -H "Content-Type: application/json" --data '{"use_voice": false}' 'http://homeassistant.local:9123/v1/register/+491770000000'
+
+curl -X POST -H "Content-Type: application/json" -d '{"captcha":"signal-hcaptcha.VERY_LONG_CAPTCHA_IS_MANUALLY_PUT_HERE", "use_voice": false}' 'http://homeassistant.local:9123/v1/register/+491770000000'
+
+curl -X POST -H "Content-Type: application/json" 'http://homeassistant.local:9123/v1/register/+491770000000/verify/512982'
 
 ## Configuration
 
@@ -38,7 +65,8 @@ notify:
     url: "http://127.0.0.1:8080" # the URL where the Signal Messenger REST API is listening 
     number: "YOUR_PHONE_NUMBER" # the sender number
     recipients: # one or more recipients
-      - "RECIPIENT1"
+      - "+132022243121"
+      - "+491234560022"
 ```
 
 Both phone numbers and Signal Messenger groups can be added to the `recipients`list. However, it's not possible to mix phone numbers and Signal Messenger groups in a single notifier. If you would like to send messages to individual phone numbers and Signal Messenger groups, separate notifiers need to be created.
@@ -103,14 +131,20 @@ action:
 
 A few examples on how to use this integration as actions in automations.
 
-### Text message
 
+### Text message
 ```yaml
 ...
+alias: TestSignalMessenger
+description: ""
+trigger: []
+condition: []
 action:
-  service: notify.NOTIFIER_NAME
-  data:
-    message: "That's an example that sends a simple text message to the recipients specified in the configuration.yaml"
+  - service: notify.signal
+    data:
+      message: "Hi there this is your homeassistant sending messenges via signal"
+      target: 49170123123 3394326339
+mode: single
 ```
 
 ### Text message with an attachment
